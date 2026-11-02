@@ -124,6 +124,8 @@ pub(crate) struct WasmView {
     pub(super) canvases: HashMap<String, CanvasState>,
     pub(super) open_popup: Option<String>,
     pub(super) focus: FocusHandle,
+    /// Where on a list's scrollbar thumb the pointer took it.
+    pub(super) thumb_grab: f32,
 }
 
 impl WasmView {
@@ -156,6 +158,7 @@ impl WasmView {
             canvases: HashMap::new(),
             open_popup: None,
             focus: cx.focus_handle(),
+            thumb_grab: 0.,
         }
     }
 

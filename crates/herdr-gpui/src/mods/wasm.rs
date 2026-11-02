@@ -16,6 +16,7 @@ mod keys;
 mod link;
 mod list;
 mod render;
+mod scrollbar;
 mod theme;
 mod tree;
 mod view;

@@ -171,8 +171,9 @@ Each was my call, made from the code. The brief allowed that.
 
 ## Known limitations of this proof of concept
 
-- A virtual list (the diff's page) scrolls by wheel and keys but draws no
-  scrollbar. Herdr UI has no shared scrollbar component yet.
+- A virtual list (the diff's page) has a scrollbar of its own, as Settings
+  and the review have theirs: Herdr UI has no shared scrollbar component
+  yet. Rows the list has not laid out count at the first row's height.
 - Pictures (`Shape::Image`, `ImageSrc`) are not drawn, and `Open`, which
   opens another module in a new tab, is logged and ignored.
 - The module is told only the focused workspace's folder, without its

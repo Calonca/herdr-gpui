@@ -344,7 +344,9 @@ pub(super) fn virtual_list(
     )
     .track_scroll(&handle)
     .size_full();
-    let mut el = div().relative().w_full().child(rows);
+    let thumb = super::scrollbar::thumb_for(id, &handle, b.t, cx);
+    let el = div().relative().w_full().child(rows).children(thumb);
+    let mut el = super::scrollbar::follow_drag(el, id, &handle, cx);
     if *font == Font::Mono {
         el = el.font_family(b.mono.clone());
     }
