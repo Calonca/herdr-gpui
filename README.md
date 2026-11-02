@@ -439,6 +439,17 @@ socket of its own. The same [command line](docs/cli.md) reaches the rest of
 what only the GUI keeps: its windows and tabs, worktree notes, checkpoints,
 forwarded ports, and its settings.
 
+## WASM mods
+
+Besides its own [Luau mods](docs/mods.md), Herdr UI runs mods written once as
+sandboxed WebAssembly modules for [WASM Mods](https://github.com/Calonca/herdr-wasm-mods),
+the same `.wasm` files other apps run. A WASM mod is a mod folder whose
+`mod.toml` names its module, and it opens as an activity bar app. Its module
+runs in `wasm-mods-host`, which asks you before the module touches a folder
+or runs git. Herdr UI draws what the module shows in your theme. To try the
+todo list and the diff viewer, see [WASM mods](docs/mods.md#wasm-mods); the
+design is in [docs/wasm-mods-design.md](docs/wasm-mods-design.md).
+
 ## Audio Test
 
 The QA menu is off by default in every build, including published releases;

@@ -176,6 +176,58 @@ A broken save keeps the last working version drawn and shows the error in
 `herdr-gpui mod`. Turn mods off with `[mods] enabled = false`, or one with
 `[mods] disabled = ["agents"]`, in `config-gpui.toml`.
 
+## WASM mods
+
+A mod can also be a sandboxed WebAssembly module written for
+[WASM Mods](https://github.com/Calonca/herdr-wasm-mods), the runtime other
+apps run the same modules in. Its `mod.toml` names the module instead of
+having `main.luau`, and it is an activity bar app:
+
+```toml
+name = "wasm-todo"
+api = 1
+
+[activity]
+title = "Todo"
+icon = "icon.svg"
+
+[wasm]
+module = "todo"   # todo.wasm in this folder, else the installed one
+```
+
+The module runs in `wasm-mods-host`, never in Herdr UI. The host asks
+before the module reads or writes a folder or runs git, in the module's own
+place, with **Allow** and **Deny**. It remembers each answer for that build
+of the module. Herdr UI draws what the module shows in your theme, and turns
+your clicks and keys into the module's actions:
+
+- arrows and `j`/`k` move its list;
+- Enter opens, Space is its main action, Esc goes back;
+- Tab and Shift+Tab are its second action;
+- PageUp/PageDown and Home/End page through a long view, such as a diff.
+
+To try one:
+
+1. Install the host, version 0.2.0 or later, as
+   `~/.local/share/wasm-mods/host/<version>/wasm-mods-host`.
+   `scripts/install.sh` in the WASM Mods repository does this, as does
+   opening any WASM mod in herdr-app once. Hosts are released for Linux.
+2. Copy an example folder from `crates/herdr-gpui/mods/` (`wasm-todo`,
+   `wasm-diff`, or `wasm-hello`) into the mods folder.
+3. Put the module beside its `mod.toml`. `todo.wasm` and `diff.wasm` are in
+   the release's `wasm-mods-0.2.0.tar.gz`, under `wasm-todo/` and
+   `wasm-diff/`. `hello` is built from the repository's `modules/hello`;
+   without a `.wasm` in the folder, the installed module of that name runs.
+4. Pick its icon in the activity bar.
+
+Herdr UI copies the folder's module to
+`~/.local/share/wasm-mods/modules/<mod name>.wasm`. It starts one host for
+all its windows, or reuses the one it started before, and the host exits
+after ten idle minutes. If the host goes away, the view keeps its last
+frame, shows "Reconnecting…", and starts a host again. The diff reads the
+focused workspace's folder on this computer. The design and what is left
+are in [wasm-mods-design.md](wasm-mods-design.md).
+
 ## For agents
 
 Herdr UI installs a `herdr-mods` skill beside its browser and automations
