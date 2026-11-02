@@ -28,6 +28,8 @@ url = "2"
 # ACP wire types for herdr-acp; its own transport, so no async runtime.
 acp                  = { default-features = false, package = "agent-client-protocol-schema", version = "1.12" }
 anyhow               = "1"
+# A one-slot wake from a WASM mod's connection thread to the window.
+async-channel        = "2"
 aes                  = "0.9.3"
 ammonia              = "4.2.1"
 cbc                  = { features = ["block-padding"], version = "0.2.1" }

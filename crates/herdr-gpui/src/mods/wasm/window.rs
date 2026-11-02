@@ -63,12 +63,19 @@ impl HerdrWindow {
             folder,
         };
         let mut close = false;
+        let mut wakes = Vec::new();
         for (name, entry) in &mut self.mods.entries {
-            let wasm = entry
+            let module = entry
                 .manifest
                 .as_ref()
-                .is_some_and(|manifest| manifest.wasm.is_some());
-            if !wasm || std::mem::take(&mut entry.wasm_reloaded) {
+                .and_then(|manifest| manifest.wasm.as_ref())
+                .map(|wasm| wasm.module.clone());
+            let reloaded = std::mem::take(&mut entry.wasm_reloaded);
+            let kept = match (&module, &entry.wasm_view) {
+                (Some(module), Some(view)) if reloaded => view.read(cx).reload(module),
+                _ => !reloaded,
+            };
+            if module.is_none() || !kept {
                 // Dropping the view closes its connection; the next tick
                 // makes a new one if the app shows.
                 entry.wasm_view = None;
@@ -78,14 +85,30 @@ impl HerdrWindow {
                 continue;
             };
             let surroundings = around(folder.clone());
-            let polled = view.update(cx, |view, cx| {
+            let (polled, wake) = view.update(cx, |view, cx| {
                 view.surround(surroundings, cx);
-                view.poll(window, cx)
+                (view.poll(window, cx), view.take_arrivals())
             });
+            wakes.extend(wake);
             close |= polled.close && shown.as_deref() == Some(name.as_str());
         }
         if close {
             self.leave_mod_app(window, cx);
+        }
+        // A view's frames are drawn as they arrive, not up to a tick later:
+        // that wait would cap how often a module can answer moving input.
+        for arrivals in wakes {
+            cx.spawn_in(window, async move |this, cx| {
+                while arrivals.recv().await.is_ok() {
+                    if this
+                        .update_in(cx, |this, window, cx| this.poll_wasm_mods(window, cx))
+                        .is_err()
+                    {
+                        break;
+                    }
+                }
+            })
+            .detach();
         }
     }
 

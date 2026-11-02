@@ -74,9 +74,11 @@ Each was my call, made from the code. The brief allowed that.
    ```
 
    `herdr-mods` parses `[wasm]` and does not require `main.luau` when it is
-   present. A new build of the folder's `.wasm` restarts the mod, as a save
-   restarts a Luau mod. `[wasm]` with a `main.luau` is refused, so a folder is one kind of
-   mod or the other. The scanner, the reload on save, `[mods] disabled`,
+   present. A new build of the folder's `.wasm` is installed over the old
+   one on the open connection, and the host swaps it in keeping the
+   module's state; the view keeps its own (a canvas's zoom). Changing
+   which module the mod names makes a new view. `[wasm]` with a
+   `main.luau` is refused, so a folder is one kind of mod or the other. The scanner, the reload on save, `[mods] disabled`,
    `herdr-gpui mod`, and `mod open` work unchanged.
    *Why:* the brief asked for this, and it adds about thirty lines to
    `herdr-mods` instead of a second discovery path.
@@ -133,9 +135,10 @@ Each was my call, made from the code. The brief allowed that.
    connects, sends `hello` (with `native_canvas: true`), and then reads lines.
    It talks to the UI through the same kind of mutex mailbox Luau mod workers
    use: the latest frame (coalesced), a short bounded queue of other host
-   messages, and a bounded queue of outgoing lines. The window's 16 ms tick
-   takes what arrived. Nothing is unbounded, and only the newest frame is
-   ever drawn.
+   messages, and a bounded queue of outgoing lines. A one-slot wake has the
+   window take what arrived at once, not on its next 16 ms tick, which would
+   cap how often a module answers moving input. Nothing is unbounded, and
+   only the newest frame is ever drawn.
 
 8. **Reconnecting.** When the host goes away, the view keeps its last frame
    and shows "reconnecting…". The thread forgets the run file if it still

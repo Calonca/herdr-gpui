@@ -95,6 +95,8 @@ pub(crate) struct Surroundings<'a> {
 
 pub(crate) struct WasmView {
     pub(super) link: Option<Link>,
+    /// The link's wake, until the window takes it to poll on arrival.
+    arrivals: Option<async_channel::Receiver<()>>,
     pub(super) shown: Shown,
     pub(super) frame: Option<Frame>,
     /// The room it has, last told the host.
@@ -131,6 +133,7 @@ impl WasmView {
             Err(error) => (None, Shown::Failed(error)),
         };
         Self {
+            arrivals: link.as_ref().map(Link::arrivals),
             link,
             shown,
             frame: None,
@@ -186,6 +189,23 @@ impl WasmView {
             self.send(&In::Window(window.clone()));
             self.sent_window = Some(window);
         }
+    }
+
+    /// A new build of the mod's files: true when the open connection takes
+    /// it, keeping the module's state and this view's (a canvas's zoom);
+    /// false when the window should make a new view.
+    pub(crate) fn reload(&self, module: &str) -> bool {
+        if matches!(self.shown, Shown::Failed(_)) {
+            return false;
+        }
+        self.link
+            .as_ref()
+            .is_some_and(|link| link.reinstall(module))
+    }
+
+    /// The link's wake, once: whoever takes it polls when it fires.
+    pub(crate) fn take_arrivals(&mut self) -> Option<async_channel::Receiver<()>> {
+        self.arrivals.take()
     }
 
     fn connected(&self) -> bool {

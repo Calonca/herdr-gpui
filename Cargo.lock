@@ -4984,6 +4984,7 @@ version = "0.1.0"
 dependencies = [
  "ammonia",
  "anyhow",
+ "async-channel",
  "base64 0.23.1",
  "block2 0.6.2",
  "chrono",

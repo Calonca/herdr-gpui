@@ -9,3 +9,5 @@ mod fixtures;
 mod host_start;
 #[cfg(unix)]
 mod keys;
+#[cfg(unix)]
+mod reload;
