@@ -5067,6 +5067,7 @@ dependencies = [
  "ureq",
  "url",
  "uuid",
+ "wasm-mods-protocol",
  "windows 0.62.2",
  "windows-registry 0.100.0",
  "windows-result 0.100.0",
@@ -11515,6 +11516,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "81941cd78d0c92026c33e5e01312845a4cb1e9af3407f9134b100dd03144103e"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "wasm-mods-protocol"
+version = "0.2.0"
+source = "git+https://github.com/Calonca/herdr-wasm-mods?rev=b619c0161605e0c144e6be7f2609147a91a24e32#b619c0161605e0c144e6be7f2609147a91a24e32"
+dependencies = [
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

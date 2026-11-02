@@ -16,6 +16,7 @@ mod panel;
 mod render;
 mod scan;
 mod state;
+pub(crate) mod wasm;
 mod worker;
 
 #[cfg(test)]
@@ -88,6 +89,10 @@ pub(crate) struct Entry {
     /// Why the mod's files last failed to load; the last good mod runs on.
     load_error: Option<herdr_mods::Error>,
     pub(crate) log: VecDeque<LogLine>,
+    /// A WASM mod's view, made when its app is first shown.
+    wasm_view: Option<gpui::Entity<wasm::WasmView>>,
+    /// Its manifest was read again since the view last heard: files changed.
+    wasm_reloaded: bool,
 }
 
 /// What a poll found.
@@ -131,6 +136,8 @@ impl Mods {
                 call_error: None,
                 load_error: None,
                 log: VecDeque::new(),
+                wasm_view: None,
+                wasm_reloaded: false,
             },
         );
     }
@@ -167,6 +174,8 @@ impl Mods {
                             call_error: None,
                             load_error: None,
                             log: VecDeque::new(),
+                            wasm_view: None,
+                            wasm_reloaded: false,
                         },
                     );
                 }
@@ -182,6 +191,7 @@ impl Mods {
             }
             if let Some(manifest) = report.manifest {
                 entry.manifest = Some(manifest);
+                entry.wasm_reloaded = true;
             }
             if let Some(tree) = report.tree {
                 entry.tree = tree;
@@ -290,6 +300,7 @@ impl HerdrWindow {
             self.mods.offer(state, now);
         }
         let polled = self.mods.poll(&self.config.mods);
+        self.poll_wasm_mods(window, cx);
         for command in polled.commands {
             self.run_mod_command(command, window, cx);
         }

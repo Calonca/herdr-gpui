@@ -51,6 +51,11 @@ impl HerdrWindow {
         cx: &mut Context<Self>,
     ) {
         self.activity.app = Some(name.to_owned());
+        // A WASM mod's view takes the keys itself.
+        if self.focus_wasm_view(name, window, cx) {
+            cx.notify();
+            return;
+        }
         // The mod's body hides the terminals, so typing must not reach them.
         let focus = self
             .activity
@@ -141,6 +146,9 @@ impl HerdrWindow {
         let title = entry.activity()?.title.clone();
         let theme = &self.theme;
         let size = self.config.ui.size;
+        if let Some(view) = &entry.wasm_view {
+            return Some(self.render_wasm_app(name, title, view.clone()));
+        }
         let painter = Painter {
             theme,
             name,
@@ -202,6 +210,50 @@ impl HerdrWindow {
                 )
                 .into_any_element(),
         )
+    }
+}
+
+impl HerdrWindow {
+    /// A WASM mod's app: its title over its view, which fills the body and
+    /// scrolls itself.
+    fn render_wasm_app(
+        &self,
+        name: &str,
+        title: String,
+        view: Entity<super::wasm::WasmView>,
+    ) -> AnyElement {
+        let theme = &self.theme;
+        let size = self.config.ui.size;
+        div()
+            .id(SharedString::from(format!("mod-app-{name}")))
+            .debug_selector(|| format!("mod-app-{name}"))
+            .flex()
+            .flex_col()
+            .flex_1()
+            .size_full()
+            .min_w_0()
+            .min_h_0()
+            .bg(rgb(theme.background))
+            .text_color(rgb(theme.foreground))
+            .child(
+                div()
+                    .px(px(28.))
+                    .pt(px(22.))
+                    .pb(px(8.))
+                    .text_size(px(size * 1.6))
+                    .font_weight(FontWeight::BOLD)
+                    .child(SharedString::from(title)),
+            )
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .flex_1()
+                    .min_h_0()
+                    .px(px(14.))
+                    .child(view),
+            )
+            .into_any_element()
     }
 }
 

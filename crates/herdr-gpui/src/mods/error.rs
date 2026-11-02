@@ -16,4 +16,6 @@ pub enum Error {
     },
     #[error("`[mods] disabled` lists more than {0} mods")]
     TooManyDisabled(usize),
+    #[error(transparent)]
+    Wasm(#[from] super::wasm::Error),
 }

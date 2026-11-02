@@ -317,8 +317,10 @@ impl HerdrWindow {
         }
         self.poll_core_panes(window, cx);
         // Split chrome and the sidebar's rows name panes from what herdr-core
-        // reports, so it is read while any herdr-core tab is known.
-        let listed = !self.core_terminals.tabs.is_empty();
+        // reports, so it is read while any herdr-core tab is known, and a
+        // WASM mod works in the stand-in shell's folder.
+        let fallback = matches!(self.core_terminals.fallback, fallback::Fallback::Shown(_));
+        let listed = fallback || !self.core_terminals.tabs.is_empty();
         let backend = listed.then(|| self.core_terminals.hub.backend()).flatten();
         if self
             .core_terminals

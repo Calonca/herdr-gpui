@@ -216,6 +216,9 @@ unicode-properties   = { version = "0.1.4", default-features = false, features =
 unicode-segmentation = "1"
 unicode-width        = "0.2.2"
 ureq                 = "3"
+# The wire and node types of WASM mods' host (docs/wasm-mods-design.md), at
+# its 0.2.0 release; serde and serde_json only.
+wasm-mods-protocol   = { git = "https://github.com/Calonca/herdr-wasm-mods", rev = "b619c0161605e0c144e6be7f2609147a91a24e32" }
 webpki-roots         = "1"
 uuid                 = { features = ["serde", "v4", "v5"], version = "1" }
 # Window shell properties behind the taskbar relaunch identity; the version

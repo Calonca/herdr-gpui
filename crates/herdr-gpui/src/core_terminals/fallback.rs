@@ -110,6 +110,18 @@ impl HerdrWindow {
         }
     }
 
+    /// The folder herdr-core last reported for the shell shown in place of
+    /// Herdr 1, if it shows.
+    pub(crate) fn core_fallback_folder(&self, cx: &App) -> Option<&std::path::Path> {
+        let Fallback::Shown(view) = &self.core_terminals.fallback else {
+            return None;
+        };
+        // The shell is found by its name, which herdr-core lists beside its
+        // address.
+        let name = view.read(cx).id.as_str();
+        self.core_terminals.infos.named(name)?.cwd.as_deref()
+    }
+
     /// Whether the window should still ask the user to install Herdr: only
     /// once herdr-core is known to be unavailable as well.
     pub(crate) fn needs_herdr_install(&self) -> bool {

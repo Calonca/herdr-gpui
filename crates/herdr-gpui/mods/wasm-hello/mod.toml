@@ -1,0 +1,12 @@
+# An example WASM mod: copy this folder to <config>/herdr/gpui-mods/wasm-hello
+# and put hello.wasm from the WASM Mods 0.2.0 release beside this file
+# (docs/mods.md, "WASM mods"). wasm-mods-host runs it.
+name = "wasm-hello"
+api = 1
+
+[activity]
+title = "Hello"
+icon = "icon.svg"
+
+[wasm]
+module = "hello"

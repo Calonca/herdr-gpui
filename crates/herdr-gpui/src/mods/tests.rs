@@ -5,6 +5,7 @@ mod activity;
 mod config;
 mod example;
 mod mods;
+mod wasm_examples;
 mod worker;
 
 /// Writes a mod folder named `name` with `main` as its `main.luau`.

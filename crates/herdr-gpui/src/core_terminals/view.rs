@@ -57,7 +57,7 @@ pub(crate) struct CoreTerminalView {
     /// The cell a button-less pointer last reported, so movement inside
     /// one cell is not reported again.
     hovered: Option<Cell>,
-    id: TerminalId,
+    pub(super) id: TerminalId,
     link: Link,
     look: Look,
     /// Text an IME is composing; committed text goes to the terminal.
