@@ -30,6 +30,7 @@ fn fixture(
                             order: 500,
                         },
                         needs: Needs::default(),
+                        wasm: None,
                     },
                     Some(Node::Spacer),
                 );
@@ -140,6 +141,7 @@ fn an_app_that_draws_nothing_is_not_loading(cx: &mut gpui::TestAppContext) {
                     order: 500,
                 },
                 needs: Needs::default(),
+                wasm: None,
             },
             None,
         );

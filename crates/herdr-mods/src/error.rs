@@ -33,6 +33,8 @@ pub enum Error {
     Toml(#[from] toml::de::Error),
     #[error("view: {at}: {problem}")]
     Tree { at: String, problem: Problem },
+    #[error("a WASM mod has no main.luau")]
+    WasmWithLuau,
 }
 
 impl Error {

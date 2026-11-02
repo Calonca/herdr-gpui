@@ -18,6 +18,14 @@
 //! [needs]
 //! exec = ["gh"]
 //! ```
+//!
+//! A WASM mod (`docs/wasm-mods-design.md`) names a module for wasm-mods-host
+//! instead of having `main.luau`, and is always an activity bar app:
+//!
+//! ```toml
+//! [wasm]
+//! module = "todo"   # todo.wasm in the folder, else the installed one
+//! ```
 
 use crate::{Error, Problem, Result, names::named};
 use serde::Deserialize;
@@ -56,6 +64,17 @@ pub struct Manifest {
     /// has `panel`.
     pub panel: Panel,
     pub needs: Needs,
+    /// The WASM module the mod runs in wasm-mods-host, instead of Luau.
+    pub wasm: Option<Wasm>,
+}
+
+/// A WASM mod's module, as `[wasm]` names it.
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Wasm {
+    /// The module's name: `<module>.wasm` in the mod's folder, or the module
+    /// of that name already installed for wasm-mods-host.
+    pub module: String,
 }
 
 /// A mod's section in the right-hand panel, as `[panel]` sets it.
@@ -123,6 +142,7 @@ struct Raw {
     panel: Option<RawPanel>,
     #[serde(default)]
     needs: Needs,
+    wasm: Option<Wasm>,
 }
 
 impl Manifest {
@@ -178,6 +198,17 @@ impl Manifest {
                 text(need, MAX_NEED).map_err(|p| invalid(&format!("{field}[{index}]"), p))?;
             }
         }
+        if let Some(wasm) = &raw.wasm {
+            module_name(&wasm.module).map_err(|problem| invalid("wasm.module", problem))?;
+            if raw.activity.is_none() {
+                return Err(invalid(
+                    "wasm",
+                    Problem::Expected {
+                        expected: "set only with an [activity] table",
+                    },
+                ));
+            }
+        }
         let panel = match raw.panel {
             None => Panel {
                 title: None,
@@ -217,6 +248,7 @@ impl Manifest {
             activity: raw.activity,
             panel,
             needs: raw.needs,
+            wasm: raw.wasm,
         })
     }
 }
@@ -239,6 +271,25 @@ pub(crate) fn identifier(name: &str) -> Result<(), Problem> {
     if !valid {
         return Err(Problem::Expected {
             expected: "lowercase letters, digits, and single hyphens, starting with a letter",
+        });
+    }
+    Ok(())
+}
+
+/// A wasm-mods-host module name: what its wire accepts, never a path.
+fn module_name(name: &str) -> Result<(), Problem> {
+    if name.is_empty() {
+        return Err(Problem::Empty);
+    }
+    if name.len() > 64 {
+        return Err(Problem::TooLong { limit: 64 });
+    }
+    if !name
+        .bytes()
+        .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'_' || b == b'-')
+    {
+        return Err(Problem::Expected {
+            expected: "lowercase letters, digits, `_` and `-`",
         });
     }
     Ok(())

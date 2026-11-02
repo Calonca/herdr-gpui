@@ -111,8 +111,10 @@ impl Sources {
         }
         let hash = hash(&counted_files);
         let manifest = Manifest::parse(counted_files.get(MANIFEST).ok_or(Error::NoManifest)?)?;
-        if !counted_files.contains_key(MAIN) {
-            return Err(Error::NoMain);
+        match (manifest.wasm.is_some(), counted_files.contains_key(MAIN)) {
+            (false, false) => return Err(Error::NoMain),
+            (true, true) => return Err(Error::WasmWithLuau),
+            _ => {}
         }
         let mut luau = BTreeMap::new();
         let mut icons = BTreeMap::new();
@@ -164,8 +166,8 @@ impl Sources {
     }
 }
 
-/// What changes when a counted file in a mod's folder changes: each one's
-/// name, length, and modification time. Cheap enough to take every second;
+/// What changes when a counted file or a `.wasm` in a mod's folder changes:
+/// each one's name, length, and modification time. Cheap enough to take every second;
 /// a new stamp means [`Sources::read`] again.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Stamp(Vec<(String, u64, Option<SystemTime>)>);
@@ -183,7 +185,9 @@ impl Stamp {
             let Some(name) = entry.file_name().to_str().map(str::to_owned) else {
                 continue;
             };
-            if !counted(&name) || files.len() > MAX_FILES {
+            // A WASM mod's module is not one of its sources, but a new
+            // build of it makes the mod start again.
+            if !(counted(&name) || name.ends_with(".wasm")) || files.len() > MAX_FILES {
                 continue;
             }
             let Ok(meta) = entry.metadata() else {

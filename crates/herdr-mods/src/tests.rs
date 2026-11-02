@@ -10,6 +10,7 @@ mod runtime;
 mod sources;
 mod state;
 mod tree;
+mod wasm;
 
 const MANIFEST: &str = "name = \"demo\"\napi = 1\n";
 

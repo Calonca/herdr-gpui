@@ -23,6 +23,7 @@ fn manifest(name: &str, place: Place) -> Manifest {
             order: 500,
         },
         needs: Needs::default(),
+        wasm: None,
     }
 }
 

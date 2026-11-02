@@ -250,8 +250,20 @@ impl Worker {
             return;
         }
         self.stamp = Some(stamp);
+        let sources = match Sources::read(&self.dir) {
+            Ok(sources) => sources,
+            Err(error) => return self.fail_load(error),
+        };
+        // A WASM mod runs in wasm-mods-host, not here: only its manifest and
+        // icon are reported, and the window connects to the host.
+        if sources.manifest.wasm.is_some() {
+            self.module = None;
+            self.timers.clear();
+            self.dirty = false;
+            return self.report_loaded(sources, None);
+        }
         let mut log = Vec::new();
-        let candidate = self.candidate(&mut log);
+        let candidate = self.candidate(sources, &mut log);
         push_log(&mut lock(&self.link.outbox), log);
         let (sources, module, tree) = match candidate {
             Ok((sources, module, Ok(tree))) => (sources, module, Some(tree)),
@@ -264,6 +276,11 @@ impl Worker {
         self.module = Some(module);
         self.timers.clear();
         self.dirty = false;
+        self.report_loaded(sources, tree);
+    }
+
+    /// Reports a mod that loaded: its manifest, icon, and first tree.
+    fn report_loaded(&self, sources: Sources, tree: Option<Option<Node>>) {
         let icon = sources
             .manifest
             .activity
@@ -280,11 +297,10 @@ impl Worker {
         }
     }
 
-    /// Reads and loads the mod's files and draws them once, leaving what
+    /// Loads the mod's files and draws them once, leaving what
     /// it logged in `log`. Loading must work; the first view's result is
     /// the caller's to judge.
-    fn candidate(&self, log: &mut Vec<LogLine>) -> Result<Candidate, Error> {
-        let sources = Sources::read(&self.dir)?;
+    fn candidate(&self, sources: Sources, log: &mut Vec<LogLine>) -> Result<Candidate, Error> {
         let now = SystemTime::now();
         let mut module = Mod::load(&sources, limits(), now)?;
         let tree = module.view(&self.state, now);

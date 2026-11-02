@@ -41,7 +41,7 @@ mod state;
 pub use data::Data;
 pub use effect::Effect;
 pub use error::{Budget, Error, Problem, Result};
-pub use manifest::{API, Activity, CommandDecl, Manifest, Needs, Panel, Place};
+pub use manifest::{API, Activity, CommandDecl, Manifest, Needs, Panel, Place, Wasm};
 pub use node::{
     Action, Align, Badge, Button, Container, Element, Gap, Icon, IconSource, Link, List, Meter,
     Node, Progress, Size, Text, Toggle, Tone, Tooltip, Weight,
